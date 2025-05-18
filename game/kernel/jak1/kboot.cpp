@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <thread>
-
+#include "game/system/hid/devices/game_controller.h"
 #include "common/common_types.h"
 #include "common/log/log.h"
 #include "common/util/Timer.h"
@@ -108,29 +108,106 @@ s32 goal_main(int argc, const char* const* argv) {
 /*!
  * Main loop to dispatch the GOAL kernel.
  */
+
+ int fartmarioId2 = 0;
+
 void KernelCheckAndDispatch() {
   u64 goal_stack = u64(g_ee_main_mem) + EE_MAIN_MEM_SIZE - 8;
 
+        // Must call this once with a pointer to SM64 ROM data
+    // Read the rom data (make sure it's an unmodified SM64 US ROM)
+    FILE* romFile = fopen("sm64.us.z64", "rb");
+    fseek(romFile, 0, SEEK_END);
+    size_t romSize = ftell(romFile);
+    rewind(romFile);
+    uint8_t* romData = new uint8_t[romSize];
+    fread(romData, 1, romSize, romFile);
+    fclose(romFile);
+
+    // if (sm64_init(romData, romSize) != 0) {
+    //     fprintf(stderr, "Failed to init SM64\n");
+    //     return -1;
+    // }
+    delete[] romData;
+
+
+    SM64Surface surfaces[2];
+
+// Triangle 1
+surfaces[0].vertices[0][0] = -1000;
+surfaces[0].vertices[0][1] = 0;
+surfaces[0].vertices[0][2] = -1000;
+surfaces[0].vertices[1][0] = 1000;
+surfaces[0].vertices[1][1] = 0;
+surfaces[0].vertices[1][2] = -1000;
+surfaces[0].vertices[2][0] = 1000;
+surfaces[0].vertices[2][1] = 0;
+surfaces[0].vertices[2][2] = 1000;
+
+// Triangle 2
+surfaces[1].vertices[0][0] = -1000;
+surfaces[1].vertices[0][1] = 0;
+surfaces[1].vertices[0][2] = -1000;
+surfaces[1].vertices[1][0] = 1000;
+surfaces[1].vertices[1][1] = 0;
+surfaces[1].vertices[1][2] = 1000;
+surfaces[1].vertices[2][0] = -1000;
+surfaces[1].vertices[2][1] = 0;
+surfaces[1].vertices[2][2] = 1000;
+
+sm64_static_surfaces_load(surfaces, 2);
+fartmarioId2 = sm64_mario_create(1, 1, 1);
+
+
+
+
   while (MasterExit == RuntimeExitStatus::RUNNING) {
 
-    // Main loop
-    SM64MarioGeometryBuffers marioGeom;
-    SM64MarioInputs inputs = {};
-    inputs.camLookX = 0;
-    inputs.camLookZ = 1;
-    inputs.stickX = 0;
-    inputs.stickY = 0;
-    inputs.buttonA = false;
-    inputs.buttonB = false;
-    inputs.buttonZ = false;
 
-    for (int i = 0; i < 60 * 5; ++i) {  // simulate 5 seconds
-        SM64MarioState outState;
-        //extern SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs *inputs, struct SM64MarioState *outState, struct SM64MarioGeometryBuffers *outBuffers );
-        sm64_mario_tick(-1, &inputs, &outState, &marioGeom);
-        printf("Mario position: (%f, %f, %f)\n", outState.position[0], outState.position[1], outState.position[2]);
+    static float last_position[3] = {999999, 999999, 999999};  // Init to dummy impossible state
+
+    SM64MarioState state;
+    SM64MarioGeometryBuffers geom;
+    sm64_mario_tick(fartmarioId2, &m_mario_inputs, &state, &geom);
+    
+    //Debug: print pointer and contents of m_mario_inputs
+// printf("Inputs [%p] - Stick: (%d, %d)  CamLook: (%d, %d)  A:%d B:%d Z:%d\n",
+//   (void*)&m_mario_inputs,
+//   m_mario_inputs.stickX, m_mario_inputs.stickY,
+//   m_mario_inputs.camLookX, m_mario_inputs.camLookZ,
+//   m_mario_inputs.buttonA, m_mario_inputs.buttonB, m_mario_inputs.buttonZ);
+    // Check if any position changed
+    //fmt::print("Inputs - Stick: ({}, {})\n", m_mario_inputs.stickX, m_mario_inputs.stickY);
+    bool changed = false;
+    for (int i = 0; i < 3; ++i) {
+        if (state.position[i] != last_position[i]) {
+            changed = true;
+            break;
+        }
     }
-
+    
+    if (changed) {
+        printf("Mario: %f %f %f\n", state.position[0], state.position[1], state.position[2]);
+        for (int i = 0; i < 3; ++i)
+            last_position[i] = state.position[i];
+    }
+    //printf("Action: %08X\n", state.action);
+    if (state.action == 0x00450045) {
+      printf("Detected stuck action 0x00450045, resetting inputs and state\n");
+  
+      m_mario_inputs = {
+          .camLookX = 0.0f,
+          .camLookZ = 1.0f,
+          .stickX = 0,
+          .stickY = 0,
+          .buttonA = 0,
+          .buttonB = 0,
+          .buttonZ = 0
+      };
+  
+      sm64_set_mario_action(fartmarioId2, 0x0000000F);  // ACT_IDLE
+  }
+  
     // try to get a message from the listener, and process it if needed
     Ptr<char> new_message = WaitForMessageAndAck();
     if (new_message.offset) {

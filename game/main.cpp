@@ -90,30 +90,13 @@ std::string game_arg_documentation() {
  * Entry point for the game.
  */
 
- int marioId = -1;
+
 
 int main(int argc, char** argv) {
   ArgumentGuard u8_guard(argc, argv);
 
 
-      // Must call this once with a pointer to SM64 ROM data
-    // Read the rom data (make sure it's an unmodified SM64 US ROM)
-    FILE* romFile = fopen("sm64.us.z64", "rb");
-    fseek(romFile, 0, SEEK_END);
-    size_t romSize = ftell(romFile);
-    rewind(romFile);
-    uint8_t* romData = new uint8_t[romSize];
-    fread(romData, 1, romSize, romFile);
-    fclose(romFile);
 
-    // if (sm64_init(romData, romSize) != 0) {
-    //     fprintf(stderr, "Failed to init SM64\n");
-    //     return -1;
-    // }
-    delete[] romData;
-
-    // Create a Mario instance
-    marioId = sm64_mario_create(0, 0, 0); // start at origin
 
   // CLI flags
   bool show_version = false;

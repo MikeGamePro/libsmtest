@@ -41,12 +41,13 @@ add_executable(goalc-test
         common runtime compiler gtest decomp Zydis libzstd_static tree-sitter
     )
     
-add_executable(test_image_resize ${CMAKE_CURRENT_LIST_DIR}/common/test_image_resize.cpp)
-target_link_libraries(test_image_resize common)
-
-if(WIN32)
-  target_link_libraries(goalc-test mman)
-endif()
+    add_executable(test_image_resize ${CMAKE_CURRENT_LIST_DIR}/common/test_image_resize.cpp)
+    target_link_libraries(test_image_resize PRIVATE common)
+    
+    if(WIN32)
+      target_link_libraries(goalc-test PRIVATE mman)
+    endif()
+    
 
 #gtest_discover_tests(goalc-test WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 

@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#pragma once
+extern int fartmarioId2;
 
 
 #if defined(_WIN32)
