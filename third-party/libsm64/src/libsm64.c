@@ -188,17 +188,25 @@ SM64_LIB_FN struct SM64SurfaceCollisionData* sm64_get_static_surface_data(uint32
 
 SM64_LIB_FN int32_t sm64_mario_create( float x, float y, float z )
 {
-    int32_t marioIndex = obj_pool_alloc_index( &s_mario_instance_pool, sizeof( struct MarioInstance ));
-    struct MarioInstance *newInstance = s_mario_instance_pool.objects[marioIndex];
+    printf("[sm64_mario_create] Creating Mario at position: (%f, %f, %f)\n", x, y, z);
 
+    int32_t marioIndex = obj_pool_alloc_index(&s_mario_instance_pool, sizeof(struct MarioInstance));
+    if (marioIndex < 0) {
+        printf("[sm64_mario_create] Failed to allocate Mario instance from pool!\n");
+        return -1;
+    }
+
+    struct MarioInstance* newInstance = s_mario_instance_pool.objects[marioIndex];
     newInstance->globalState = global_state_create();
-    global_state_bind( newInstance->globalState );
+    global_state_bind(newInstance->globalState);
+    printf("[sm64_mario_create] Global state created and bound\n");
 
-    if( !s_init_one_mario )
+    if (!s_init_one_mario)
     {
         s_init_one_mario = true;
         s_mario_geo_pool = alloc_only_pool_init();
-        s_mario_graph_node = process_geo_layout( s_mario_geo_pool, mario_geo_ptr );
+        s_mario_graph_node = process_geo_layout(s_mario_geo_pool, mario_geo_ptr);
+        printf("[sm64_mario_create] Mario geometry initialized\n");
     }
 
     gCurrSaveFileNum = 1;
@@ -209,11 +217,9 @@ SM64_LIB_FN int32_t sm64_mario_create( float x, float y, float z )
     gMarioSpawnInfoVal.startPos[0] = x;
     gMarioSpawnInfoVal.startPos[1] = y;
     gMarioSpawnInfoVal.startPos[2] = z;
-
     gMarioSpawnInfoVal.startAngle[0] = 0;
     gMarioSpawnInfoVal.startAngle[1] = 0;
     gMarioSpawnInfoVal.startAngle[2] = 0;
-
     gMarioSpawnInfoVal.areaIndex = 0;
     gMarioSpawnInfoVal.activeAreaIndex = 0;
     gMarioSpawnInfoVal.behaviorArg = 0;
@@ -221,19 +227,36 @@ SM64_LIB_FN int32_t sm64_mario_create( float x, float y, float z )
     gMarioSpawnInfoVal.unk18 = NULL;
     gMarioSpawnInfoVal.next = NULL;
 
-    init_mario_from_save_file();
+    printf("[sm64_mario_create] Spawn info initialized\n");
 
-    if( init_mario() < 0 )
+    init_mario_from_save_file();
+    printf("[sm64_mario_create] Mario loaded from save file\n");
+
+    if (init_mario() < 0)
     {
-        sm64_mario_delete( marioIndex );
+        printf("[sm64_mario_create] init_mario() failed! Mario likely spawned off-map\n");
+        sm64_mario_delete(marioIndex);
         return -1;
     }
 
-    set_mario_action( gMarioState, ACT_SPAWN_SPIN_AIRBORNE, 0);
-    find_floor( x, y, z, &gMarioState->floor );
+    printf("[sm64_mario_create] init_mario() succeeded\n");
+
+    set_mario_action(gMarioState, ACT_SPAWN_SPIN_AIRBORNE, 0);
+    printf("[sm64_mario_create] Mario action set to ACT_SPAWN_SPIN_AIRBORNE\n");
+
+    float floorY = find_floor(x, y, z, &gMarioState->floor);
+    if (gMarioState->floor == NULL)
+    {
+        printf("[sm64_mario_create] Warning: No floor found under Mario! Returned Y: %f\n", floorY);
+    }
+    else
+    {
+        printf("[sm64_mario_create] Floor found at Y = %f\n", floorY);
+    }
 
     return marioIndex;
 }
+
 
 SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs *inputs, struct SM64MarioState *outState, struct SM64MarioGeometryBuffers *outBuffers )
 {
