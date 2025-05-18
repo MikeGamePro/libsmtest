@@ -184,6 +184,32 @@ void KernelCheckAndDispatch() {
   sm64_set_sound_volume(0.5f);
   delete[] romBuffer;
 
+  SM64MarioState state = {};
+
+  //SM64MarioGeometryBuffers geom = {};
+  SM64MarioInputs m_mario_inputs = {
+    .camLookX = 0.0f,
+    .camLookZ = 1.0f,   // ✅ required for orientation
+    .stickX = 0,
+    .stickY = 0,
+    .buttonA = 0,
+    .buttonB = 0,
+    .buttonZ = 0
+  };
+  
+
+
+                                    printf("[DEBUG] marioId = %d\n", marioId);
+                                    SM64MarioGeometryBuffers geom;
+const int maxTris = SM64_GEO_MAX_TRIANGLES;
+
+geom.position = new float[3 * 3 * maxTris];  // 3 coords per vertex, 3 verts per tri
+geom.normal   = new float[3 * 3 * maxTris];
+geom.color    = new float[3 * 3 * maxTris];
+geom.uv       = new float[2 * 3 * maxTris];  // 2 UVs per vertex, 3 verts per tri
+geom.numTrianglesUsed = 0;
+
+
   SM64Surface surfaces[2];
   setup_flat_ground(surfaces);
 
@@ -211,36 +237,41 @@ void KernelCheckAndDispatch() {
   //         sm64_set_sound_volume(0.5f);
 
   //         sm64_play_sound_global(SOUND_ARG_LOAD(7, 0, 0x1E, 0xFF, 8));
-  SM64MarioState state = {};
-
-  //SM64MarioGeometryBuffers geom = {};
-  SM64MarioInputs m_mario_inputs = {.camLookX = 0.0f,
-                                    .camLookZ = 1.0f,
-                                    .stickX = 0,
-                                    .stickY = 0,
-                                    .buttonA = 0,
-                                    .buttonB = 0,
-                                    .buttonZ = 0};
-
-
-                                    printf("[DEBUG] marioId = %d\n", marioId);
-                                    SM64MarioGeometryBuffers geom;
-const int maxTris = SM64_GEO_MAX_TRIANGLES;
-
-geom.position = new float[3 * 3 * maxTris];  // 3 coords per vertex, 3 verts per tri
-geom.normal   = new float[3 * 3 * maxTris];
-geom.color    = new float[3 * 3 * maxTris];
-geom.uv       = new float[2 * 3 * maxTris];  // 2 UVs per vertex, 3 verts per tri
-geom.numTrianglesUsed = 0;
+  
 
   while (MasterExit == RuntimeExitStatus::RUNNING) {
     if (marioId == 0) {
       static float last_position[3] = {999999, 999999, 999999};  // Init to dummy impossible state
 
 
-                                        //geom.triangleIndices = new uint16_t[3 * SM64_GEO_MAX_TRIANGLES];
-                                        
+     //geom.triangleIndices = new uint16_t[3 * SM64_GEO_MAX_TRIANGLES];
+                                  
+     printf("Inputs [%p] - Stick: (%d, %d)  CamLook: (%.2f, %.2f)  A:%d B:%d Z:%d\n",
+       (void*)&m_mario_inputs,
+       m_mario_inputs.stickX, m_mario_inputs.stickY,
+       m_mario_inputs.camLookX, m_mario_inputs.camLookZ,
+       m_mario_inputs.buttonA, m_mario_inputs.buttonB, m_mario_inputs.buttonZ);
+
+       //m_mario_inputs.stickY = 32; // simulate forward stick
       sm64_mario_tick(marioId, &m_mario_inputs, &state, &geom);
+
+      bool changed = false;
+      for (int i = 0; i < 3; ++i) {
+        if (state.position[i] != last_position[i]) {
+          changed = true;
+          break;
+        }
+      }
+  
+      if (changed) {
+        printf("Mario position changed: X=%.2f Y=%.2f Z=%.2f\n",
+               state.position[0], state.position[1], state.position[2]);
+  
+        // Update last_position
+        for (int i = 0; i < 3; ++i) {
+          last_position[i] = state.position[i];
+        }
+      }
 
     }
 
