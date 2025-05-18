@@ -24,6 +24,7 @@
 #include "game/kernel/jak1/klisten.h"
 #include "game/kernel/jak1/kmachine.h"
 #include "game/sce/libscf.h"
+#include "libsm64.h"
 
 using namespace ee;
 
@@ -91,6 +92,7 @@ s32 goal_main(int argc, const char* const* argv) {
   // DebugSegment = 0;
 
   // Launch GOAL!
+
   if (InitMachine() >= 0) {    // init kernel
     KernelCheckAndDispatch();  // run kernel
     ShutdownMachine();         // kernel died, we should too.
@@ -109,6 +111,25 @@ void KernelCheckAndDispatch() {
   u64 goal_stack = u64(g_ee_main_mem) + EE_MAIN_MEM_SIZE - 8;
 
   while (MasterExit == RuntimeExitStatus::RUNNING) {
+
+    // Main loop
+    SM64MarioGeometryBuffers marioGeom;
+    SM64MarioInputs inputs = {};
+    inputs.camLookX = 0;
+    inputs.camLookZ = 1;
+    inputs.stickX = 0;
+    inputs.stickY = 0;
+    inputs.buttonA = false;
+    inputs.buttonB = false;
+    inputs.buttonZ = false;
+
+    for (int i = 0; i < 60 * 5; ++i) {  // simulate 5 seconds
+        SM64MarioState outState;
+        //extern SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs *inputs, struct SM64MarioState *outState, struct SM64MarioGeometryBuffers *outBuffers );
+        sm64_mario_tick(marioId, &inputs, &outState, &marioGeom);
+        printf("Mario position: (%f, %f, %f)\n", outState.position[0], outState.position[1], outState.position[2]);
+    }
+
     // try to get a message from the listener, and process it if needed
     Ptr<char> new_message = WaitForMessageAndAck();
     if (new_message.offset) {
@@ -154,6 +175,8 @@ void KernelCheckAndDispatch() {
     if (time_ms < 4) {
       std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
+
+  
   }
 }
 

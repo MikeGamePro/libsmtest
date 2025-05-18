@@ -18,7 +18,7 @@ extern u8* g_ee_main_mem;
 extern GameVersion g_game_version;
 extern BackgroundWorker g_background_worker;
 extern int g_server_port;
-
+extern int marioId ;
 RuntimeExitStatus exec_runtime(GameLaunchOptions game_options, int argc, const char** argv);
 
 extern std::thread::id g_main_thread_id;

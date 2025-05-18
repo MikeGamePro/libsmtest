@@ -17,6 +17,8 @@
 #include "common/util/term_util.h"
 #include "common/util/unicode_util.h"
 #include "common/versions/versions.h"
+#include "libsm64.h"
+
 
 #include "game/common/game_common_types.h"
 #include "graphics/gfx_test.h"
@@ -86,8 +88,31 @@ std::string game_arg_documentation() {
 /*!
  * Entry point for the game.
  */
+
+
+
 int main(int argc, char** argv) {
   ArgumentGuard u8_guard(argc, argv);
+
+
+      // Must call this once with a pointer to SM64 ROM data
+    // Read the rom data (make sure it's an unmodified SM64 US ROM)
+    FILE* romFile = fopen("sm64.us.z64", "rb");
+    fseek(romFile, 0, SEEK_END);
+    size_t romSize = ftell(romFile);
+    rewind(romFile);
+    uint8_t* romData = new uint8_t[romSize];
+    fread(romData, 1, romSize, romFile);
+    fclose(romFile);
+
+    // if (sm64_init(romData, romSize) != 0) {
+    //     fprintf(stderr, "Failed to init SM64\n");
+    //     return -1;
+    // }
+    delete[] romData;
+
+    // Create a Mario instance
+    marioId = sm64_mario_create(0, 0, 0); // start at origin
 
   // CLI flags
   bool show_version = false;
@@ -106,6 +131,10 @@ int main(int argc, char** argv) {
   fs::path user_config_dir_override;
   std::vector<std::string> game_args;
   CLI::App app{"OpenGOAL Game Runtime"};
+
+  std::cout << "Loaded libsm64 header!" << std::endl;
+   
+
   app.add_flag("--version", show_version, "Display the built revision");
   app.add_option("-g,--game", game_name, "The game name: 'jak1' or 'jak2'");
   app.add_flag("-v,--verbose", verbose_logging, "Enable verbose logging on stdout");
