@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_C_FLAGS_DEBUG -g)
@@ -35,6 +35,11 @@ add_library(sm64 SHARED ${SM64_SOURCES} ${MARIO_SOURCES})
 target_include_directories(sm64 PRIVATE src)
 target_include_directories(sm64 PRIVATE src/decomp/include)
 target_include_directories(sm64 PRIVATE src/decomp/mario)
-target_compile_options(sm64 PRIVATE -Wall -fPIC)
+if(NOT MSVC AND NOT WIN32)
+  target_compile_options(sm64 PRIVATE -Wall -fPIC)
+else()
+  target_compile_options(sm64 PRIVATE -W3)  # or use /W3 for MSVC
+endif()
+
 target_compile_definitions(sm64 PRIVATE SM64_LIB_EXPORT VERSION_US NO_SEGMENTED_MEMORY GBI_FLOATS)
 target_link_options(sm64 PRIVATE -static-libgcc -static-libstdc++)

@@ -1,5 +1,6 @@
 #pragma once
 #include "convUtils.h"
+#include <string.h>
 
 #include "utils.h"
 #include <stdlib.h>

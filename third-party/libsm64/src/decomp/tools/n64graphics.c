@@ -1,6 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+
+// Add this near the top of the file
+#ifdef _WIN32
+#include <string.h>
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#else
 #include <strings.h>
+#endif
+
 
 #define STBI_NO_LINEAR
 #define STBI_NO_HDR

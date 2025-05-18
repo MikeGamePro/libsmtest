@@ -316,6 +316,8 @@ add_subdirectory(sound)
 
 # we build the runtime as a static library.
 add_library(runtime STATIC ${RUNTIME_SOURCE} "../third-party/glad/src/glad.c")
+target_include_directories(runtime PRIVATE ${CMAKE_SOURCE_DIR}/third-party)
+
 
 target_link_libraries(runtime common fmt SDL3::SDL3 imgui discord-rpc sound stb_image libco libcurl)
 if(WIN32)
@@ -335,7 +337,9 @@ add_executable(gk main.cpp)
 #             $<TARGET_FILE_DIR:gk>)
 # endif()
 
-target_link_libraries(gk runtime)
+target_include_directories(gk PRIVATE ${CMAKE_SOURCE_DIR}/third-party)
+target_link_directories(gk PRIVATE ${CMAKE_SOURCE_DIR}/third-party/libsm64/lib)
+target_link_libraries(gk runtime libsm64)
 if(WIN32)
     set_target_properties(gk PROPERTIES VS_DPI_AWARE "PerMonitor")
 endif()

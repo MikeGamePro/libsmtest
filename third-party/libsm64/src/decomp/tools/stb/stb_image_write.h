@@ -282,7 +282,7 @@ static int stbi__start_write_file(stbi__write_context *s, const char *filename)
    if (fopen_s(&f, filename, "wb"))
       f = NULL;
 #else
-   f = fopen(filename, "wb");
+fopen_s(&f, filename, "wb");
 #endif
    stbi__start_write_callbacks(s, stbi__stdio_write, (void *) f);
    return f != NULL;

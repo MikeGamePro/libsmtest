@@ -24,7 +24,8 @@
 #include "game/kernel/jak1/klisten.h"
 #include "game/kernel/jak1/kmachine.h"
 #include "game/sce/libscf.h"
-#include "libsm64.h"
+#include <libsm64/libsm64.h>
+
 
 using namespace ee;
 
@@ -126,7 +127,7 @@ void KernelCheckAndDispatch() {
     for (int i = 0; i < 60 * 5; ++i) {  // simulate 5 seconds
         SM64MarioState outState;
         //extern SM64_LIB_FN void sm64_mario_tick( int32_t marioId, const struct SM64MarioInputs *inputs, struct SM64MarioState *outState, struct SM64MarioGeometryBuffers *outBuffers );
-        sm64_mario_tick(marioId, &inputs, &outState, &marioGeom);
+        sm64_mario_tick(-1, &inputs, &outState, &marioGeom);
         printf("Mario position: (%f, %f, %f)\n", outState.position[0], outState.position[1], outState.position[2]);
     }
 

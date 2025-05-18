@@ -17,7 +17,8 @@
 #include "common/util/term_util.h"
 #include "common/util/unicode_util.h"
 #include "common/versions/versions.h"
-#include "libsm64.h"
+#include <libsm64/libsm64.h>
+
 
 
 #include "game/common/game_common_types.h"
@@ -89,7 +90,7 @@ std::string game_arg_documentation() {
  * Entry point for the game.
  */
 
-
+ int marioId = -1;
 
 int main(int argc, char** argv) {
   ArgumentGuard u8_guard(argc, argv);

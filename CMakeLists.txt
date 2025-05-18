@@ -9,6 +9,7 @@ include(CTest)
 # Include third-party modules
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/third-party/cmake/modules/)
 
+
 # Default to Release mode
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
@@ -162,6 +163,11 @@ else()
     message(FATAL_ERROR "Unknown Compiler '${CMAKE_CXX_COMPILER_ID}', get out!")
 endif()
 
+if (MSVC OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lmsvcrt -lucrt -lvcruntime -llegacy_stdio_definitions")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lmsvcrt -lucrt -lvcruntime -llegacy_stdio_definitions")
+endif()
+
 # Platform Specific Settings
 if(WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -269,6 +275,10 @@ endif()
 include_directories(third-party/glad/include)
 include_directories(third-party/SDL/include)
 build_third_party_lib(imgui imgui)
+
+
+add_subdirectory(third-party/libsm64)
+#add_subdirectory(third-party/libsm64/src)
 
 # build the game code in C++
 add_subdirectory(game)
