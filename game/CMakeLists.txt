@@ -1,4 +1,7 @@
 # Set a more convenient ARM flag
+include_directories(third-party/libsm64)
+
+
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
     set(ARM64_ARCH TRUE)
     message(STATUS "ARM64 architecture detected")
@@ -322,6 +325,16 @@ else()
 endif()
 
 add_executable(gk main.cpp)
+
+# if(WIN32)
+#     set_target_properties(gk PROPERTIES VS_DPI_AWARE "PerMonitor")
+
+#     add_custom_command(TARGET gk POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#             ${CMAKE_SOURCE_DIR}/third-party/libsm64/sm64.dll
+#             $<TARGET_FILE_DIR:gk>)
+# endif()
+
 target_link_libraries(gk runtime)
 if(WIN32)
     set_target_properties(gk PROPERTIES VS_DPI_AWARE "PerMonitor")
