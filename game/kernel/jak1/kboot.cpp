@@ -186,16 +186,16 @@ void KernelCheckAndDispatch() {
 
   SM64MarioState state = {};
 
-  //SM64MarioGeometryBuffers geom = {};
-  SM64MarioInputs m_mario_inputs = {
-    .camLookX = 0.0f,
-    .camLookZ = 1.0f,   // ✅ required for orientation
-    .stickX = 0,
-    .stickY = 0,
-    .buttonA = 0,
-    .buttonB = 0,
-    .buttonZ = 0
-  };
+  // //SM64MarioGeometryBuffers geom = {};
+  // SM64MarioInputs m_mario_inputs = {
+  //   .camLookX = 0.0f,
+  //   .camLookZ = 1.0f,   // ✅ required for orientation
+  //   .stickX = 0,
+  //   .stickY = 0,
+  //   .buttonA = 0,
+  //   .buttonB = 0,
+  //   .buttonZ = 0
+  // };
   
 
 
@@ -246,11 +246,11 @@ geom.numTrianglesUsed = 0;
 
      //geom.triangleIndices = new uint16_t[3 * SM64_GEO_MAX_TRIANGLES];
                                   
-     printf("Inputs [%p] - Stick: (%d, %d)  CamLook: (%.2f, %.2f)  A:%d B:%d Z:%d\n",
-       (void*)&m_mario_inputs,
-       m_mario_inputs.stickX, m_mario_inputs.stickY,
-       m_mario_inputs.camLookX, m_mario_inputs.camLookZ,
-       m_mario_inputs.buttonA, m_mario_inputs.buttonB, m_mario_inputs.buttonZ);
+    // printf("Inputs [%p] - Stick: (%.2f, %.2f)  CamLook: (%.2f, %.2f)  A:%d B:%d Z:%d\n",
+    //   (void*)&m_mario_inputs,
+    //   m_mario_inputs.stickX, m_mario_inputs.stickY,
+    //   m_mario_inputs.camLookX, m_mario_inputs.camLookZ,
+    //   m_mario_inputs.buttonA, m_mario_inputs.buttonB, m_mario_inputs.buttonZ);
 
        //m_mario_inputs.stickY = 32; // simulate forward stick
       sm64_mario_tick(marioId, &m_mario_inputs, &state, &geom);
